@@ -110,7 +110,7 @@ export default function AlertsPanel() {
     loadAlerts();
   };
 
-  const createTestAlert = (_type?: Alert['type']) => {
+  const createTestAlert = () => {
     const messages = {
       info: { title: 'Información del sistema', message: 'El sistema se actualizará esta noche' },
       success: {

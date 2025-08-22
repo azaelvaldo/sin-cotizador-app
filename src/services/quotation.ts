@@ -1,14 +1,15 @@
 import {
   QuotationFilters,
-  QuotationResponse,
+  Quotation,
   CreateQuotationInput,
   CreateQuotationResponse,
 } from '@/types/quotation.types';
+import { PaginatedResponse } from '@/types/common.types';
 
 export async function fetchQuotations(
   filters?: QuotationFilters,
   extraHeaders?: HeadersInit
-): Promise<QuotationResponse> {
+): Promise<PaginatedResponse<Quotation>> {
   const params = new URLSearchParams();
   if (filters?.search) params.append('search', filters.search);
   if (filters?.cropId) params.append('cropId', filters.cropId.toString());

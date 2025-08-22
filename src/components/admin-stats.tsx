@@ -34,6 +34,7 @@ export default function AdminStats() {
       setStats(newStats);
       setLoading(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
 
   const formatCurrency = (amount: number) => {

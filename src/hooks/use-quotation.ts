@@ -44,10 +44,10 @@ export default function useQuotations(filters?: QuotationFilters) {
 
   return {
     quotations: data?.data || [],
-    total: data?.total || 0,
-    page: data?.page || 0,
-    pageSize: data?.pageSize || 10,
-    totalPages: data?.totalPages || 0,
+    total: data?.pagination.total || 0,
+    page: data?.pagination.page || 0,
+    pageSize: data?.pagination.pageSize || 10,
+    totalPages: data?.pagination.totalPages || 0,
     isLoading,
     error,
     refetch,

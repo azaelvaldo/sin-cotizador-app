@@ -1,5 +1,4 @@
 'use client';
-import Navbar from '@/components/navbar';
 import AdminStats from '@/components/admin-stats';
 import AlertsPanel from '@/components/alerts-panel';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';

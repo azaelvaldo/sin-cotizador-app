@@ -21,9 +21,10 @@ interface GeofenceMapProps {
     properties: Record<string, unknown>;
     geometry: Record<string, unknown>;
   };
+  readOnly?: boolean;
 }
 
-const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeofence }) => {
+const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeofence, readOnly }) => {
   const [area, setArea] = useState<number>(0);
   const [hasPolygon, setHasPolygon] = useState(false);
 
@@ -64,15 +65,13 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         initialGeofence.geometry.coordinates.length > 0
       ) {
         try {
-          // Add only the inner layers from GeoJSON into the feature group, so they are editable
+          
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const geoJsonLayer = L.geoJSON(initialGeofence as any);
           geoJsonLayer.getLayers().forEach((innerLayer) => {
             drawnLayers.addLayer(innerLayer);
           });
-          setHasPolygon(true);
-
-          // Calculate area
+          setHasPolygon(true);          
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const areaInSquareMeters = turf.area(initialGeofence as any);
           const areaInHectares = areaInSquareMeters / 10000;
@@ -85,20 +84,24 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
       const DrawControl = (
         L.Control as unknown as { Draw: new (options: Record<string, unknown>) => L.Control }
       ).Draw;
-      const drawControl = new DrawControl({
-        draw: {
-          polygon: {
-            allowIntersection: false,
-            showArea: true,
+      let drawControl: L.Control | null = null;
+      if (!readOnly) {
+        const dc = new DrawControl({
+          draw: {
+            polygon: {
+              allowIntersection: false,
+              showArea: true,
+            },
+            polyline: false,
+            rectangle: false,
+            circle: false,
+            circlemarker: false,
+            marker: false,
           },
-          polyline: false,
-          rectangle: false,
-          circle: false,
-          circlemarker: false,
-          marker: false,
-        },
-      });
-      map.addControl(drawControl);
+        });
+        drawControl = dc as unknown as L.Control;
+        map.addControl(drawControl);
+      }
 
       // When a polygon is created, add it to the feature group, style it, and bring to front
       const onDrawCreated = (e: {
@@ -189,15 +192,21 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         }
       };
 
-      map.on('draw:created', onDrawCreated);
-      map.on('draw:deleted', onDrawDeleted);
-      map.on('draw:edited', onDrawEdited);
+      if (!readOnly) {
+        map.on('draw:created', onDrawCreated);
+        map.on('draw:deleted', onDrawDeleted);
+        map.on('draw:edited', onDrawEdited);
+      }
 
       return () => {
-        map.off('draw:created', onDrawCreated);
-        map.off('draw:deleted', onDrawDeleted);
-        map.off('draw:edited', onDrawEdited);
-        map.removeControl(drawControl);
+        if (!readOnly) {
+          map.off('draw:created', onDrawCreated);
+          map.off('draw:deleted', onDrawDeleted);
+          map.off('draw:edited', onDrawEdited);
+        }
+        if (drawControl) {
+          map.removeControl(drawControl);
+        }
         map.removeLayer(drawnLayers);
       };
     }, [map]);
@@ -215,8 +224,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
   return (
     <div>
       <div className="mb-2 flex justify-between items-center">
-        <span className="text-sm text-gray-600">Dibuja un polígono para definir el área</span>
-        {hasPolygon && (
+        {!readOnly && hasPolygon && (
           <button
             onClick={handleClearMap}
             className="px-3 py-1 text-xs bg-red-100 text-red-700 rounded hover:bg-red-200 transition-colors"

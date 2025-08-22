@@ -1,3 +1,5 @@
+import { Quotation } from "./quotation.types";
+
 export type Role = 'ADMIN' | 'USER';
 
 export type User = {
@@ -6,7 +8,7 @@ export type User = {
   role: Role;
   createdAt: Date;
   updatedAt: Date;
-  quoteRequests?: any[]; // Will be properly typed in index.ts
+  quoteRequests?: Quotation[];
 };
 
 export type LoginResponse = {

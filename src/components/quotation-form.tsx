@@ -18,7 +18,7 @@ import useCrops from '@/hooks/use-crop';
 import useStates from '@/hooks/use-state';
 import useQuotations from '@/hooks/use-quotation';
 import useDebounce from '@/hooks/use-debounce';
-import { CreateQuotationInput, Quotation } from '@/types/quotation.types';
+import { CreateQuotationInput } from '@/types/quotation.types';
 import { Crop } from '@/types/crop.types';
 import { State } from '@/types/state.types';
 import dynamic from 'next/dynamic';
@@ -179,7 +179,7 @@ export default function QuotationForm() {
                     }
                     disabled={isSubmitting || createLoading || cropsLoading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full min-w-[220px]">
                       <SelectValue placeholder="Seleccione un cultivo" />
                     </SelectTrigger>
                     <SelectContent>
@@ -209,7 +209,7 @@ export default function QuotationForm() {
                     }
                     disabled={isSubmitting || createLoading || statesLoading}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full min-w-[220px]">
                       <SelectValue placeholder="Seleccione un estado" />
                     </SelectTrigger>
                     <SelectContent>
@@ -230,20 +230,7 @@ export default function QuotationForm() {
                   </Select>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="insuredArea">Área Asegurada (hectáreas) *</Label>
-                  <Input
-                    id="insuredArea"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.insuredArea}
-                    onChange={(e) =>
-                      setFormData((prev) => ({ ...prev, insuredArea: e.target.value }))
-                    }
-                    disabled
-                  />
-                </div>
+                
 
                 <div className="space-y-2">
                   <Label htmlFor="insuredAmount">Monto Asegurado ($) *</Label>
@@ -286,11 +273,27 @@ export default function QuotationForm() {
                     disabled={isSubmitting || createLoading}
                   />
                 </div>
+                <div className="space-y-2">
+                  <Label htmlFor="insuredArea">Hectáreas aseguradas</Label>
+                  <Input
+                    id="insuredArea"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="text-foreground disabled:opacity-100"
+                    value={formData.insuredArea}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, insuredArea: e.target.value }))
+                    }
+                    disabled
+                  />
+                  <p className="text-xs text-muted-foreground">Se calcula automáticamente desde el mapa.</p>
+                </div>
               </div>
             </div>
 
             <div className="space-y-2 lg:pl-2">
-              <Label>Área del Terreno (Mapa Interactivo)</Label>
+              <Label>Dibuja un polígono en el mapa para definir el área asegurada</Label>
               <GeofenceMap
                 onGeofenceChange={(geofence, area) => {
                   setFormData((prev) => ({

@@ -14,6 +14,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Eye, Download, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import dynamic from 'next/dynamic';
+const QuotationInfo = dynamic(() => import('@/components/quotation-info'));
 import {
   Table,
   TableBody,
@@ -26,6 +28,8 @@ import useQuotations from '@/hooks/use-quotation';
 import useCrops from '@/hooks/use-crop';
 import useStates from '@/hooks/use-state';
 import type { QuotationFilters } from '@/types/quotation.types';
+import useDebounce from '@/hooks/use-debounce';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 const ITEMS_PER_PAGE = 10;
 
@@ -56,6 +60,7 @@ const getStatusBadge = (status: string) => {
 export default function QuotationsTable() {
   const [currentPage, setCurrentPage] = useState(0);
   const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [filterStatus, setFilterStatus] = useState<'all' | QuotationFilters['status']>('all');
   const [filterCropId, setFilterCropId] = useState<'all' | number>('all');
   const [filterStateId, setFilterStateId] = useState<'all' | number>('all');
@@ -71,17 +76,19 @@ export default function QuotationsTable() {
 
   const filters = useMemo<QuotationFilters>(
     () => ({
-      search: searchTerm || undefined,
+      search: debouncedSearchTerm || undefined,
       cropId: filterCropId !== 'all' ? Number(filterCropId) : undefined,
       stateId: filterStateId !== 'all' ? Number(filterStateId) : undefined,
       status: filterStatus !== 'all' ? filterStatus : undefined,
       page: currentPage,
       pageSize: ITEMS_PER_PAGE,
     }),
-    [searchTerm, filterCropId, filterStateId, filterStatus, currentPage]
+    [debouncedSearchTerm, filterCropId, filterStateId, filterStatus, currentPage]
   );
 
   const { quotations, isLoading, total, totalPages, page, pageSize } = useQuotations(filters);
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<typeof quotations[number] | null>(null);
 
   useEffect(() => {
     setCurrentPage(0);
@@ -154,12 +161,14 @@ export default function QuotationsTable() {
     setFilterStatus('all');
     setFilterCropId('all');
     setFilterStateId('all');
-    setCurrentPage(1);
+    setCurrentPage(0);
   };
 
   const handleViewDetail = (quotationId: string) => {
-    // TODO: navigate to detail view when available
-    console.log('view quotation', quotationId);
+    const q = quotations.find((qq) => qq.id === quotationId);
+    if (!q) return;
+    setSelected(q);
+    setOpen(true);
   };
 
   if (isLoading) {
@@ -221,7 +230,7 @@ export default function QuotationsTable() {
                 value={filterStatus}
                 onValueChange={(v) => setFilterStatus(v as typeof filterStatus)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full min-w-[200px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -240,7 +249,7 @@ export default function QuotationsTable() {
                 value={String(filterCropId)}
                 onValueChange={(v) => setFilterCropId(v === 'all' ? 'all' : Number(v))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full min-w-[200px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -267,7 +276,7 @@ export default function QuotationsTable() {
                 value={String(filterStateId)}
                 onValueChange={(v) => setFilterStateId(v === 'all' ? 'all' : Number(v))}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full min-w-[200px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -306,8 +315,8 @@ export default function QuotationsTable() {
                   <TableHead>Cultivo</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Estado (MX)</TableHead>
-                  <TableHead className="text-right">Superficie</TableHead>
-                  <TableHead className="text-right">Monto</TableHead>
+                  <TableHead className="text-left">Superficie</TableHead>
+                  <TableHead className="text-left">Monto</TableHead>
                   <TableHead>Vigencia</TableHead>
                   <TableHead>Creada</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
@@ -339,8 +348,8 @@ export default function QuotationsTable() {
                           ? (quotation.state as { name?: string }).name || '-'
                           : '-'}
                       </TableCell>
-                      <TableCell className="text-right">{quotation.insuredArea} ha</TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="text-left">{quotation.insuredArea.toFixed(3)} ha</TableCell>
+                      <TableCell className="text-left">
                         {formatCurrency(quotation.insuredAmount)}
                       </TableCell>
                       <TableCell className="text-sm">
@@ -367,30 +376,30 @@ export default function QuotationsTable() {
           </div>
 
           {/* Paginación */}
-          {totalPages > 1 && (
+          {totalPages > 0 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
-                Mostrando {(page - 1) * pageSize + 1} a {Math.min(page * pageSize, total)} de{' '}
+                Mostrando {page * pageSize + 1} a {Math.min((page + 1) * pageSize, total)} de{' '}
                 {total} resultados
               </p>
               <div className="flex items-center space-x-2">
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                  disabled={page === 1}
+                  onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+                  disabled={page === 0}
                 >
                   <ChevronLeft className="h-4 w-4" />
                   Anterior
                 </Button>
                 <span className="text-sm">
-                  Página {page} de {totalPages}
+                  Página {page + 1} de {totalPages}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                  disabled={page === totalPages}
+                  onClick={() => setCurrentPage((prev) => Math.min(prev + 1, Math.max(totalPages - 1, 0)))}
+                  disabled={page >= Math.max(totalPages - 1, 0)}
                 >
                   Siguiente
                   <ChevronRight className="h-4 w-4" />
@@ -401,7 +410,15 @@ export default function QuotationsTable() {
         </CardContent>
       </Card>
 
-      {/* Detail modal removed until implemented */}
+      {/* Detail modal */}
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="w-[90vw] max-w-[60vw] sm:max-w-[60vw] max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalle de Cotización</DialogTitle>
+          </DialogHeader>
+          {selected && <QuotationInfo quotation={selected} />}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
