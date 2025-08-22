@@ -1,4 +1,4 @@
-import { PaginationParams } from "./common.types";
+import { PaginationParams } from './common.types';
 
 export type QuotationFilters = PaginationParams & {
   search?: string;

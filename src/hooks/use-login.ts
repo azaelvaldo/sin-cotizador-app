@@ -3,8 +3,6 @@
 import { useState } from 'react';
 import { LoginCredentials, LoginResponse } from '@/types/auth.types';
 
-
-
 export type UseLoginReturn = {
   login: (credentials: LoginCredentials) => Promise<LoginResponse | null>;
   isLoading: boolean;

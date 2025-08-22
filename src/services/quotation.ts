@@ -1,6 +1,14 @@
-import { QuotationFilters, QuotationResponse, CreateQuotationInput, CreateQuotationResponse } from '@/types/quotation.types';
+import {
+  QuotationFilters,
+  QuotationResponse,
+  CreateQuotationInput,
+  CreateQuotationResponse,
+} from '@/types/quotation.types';
 
-export async function fetchQuotations(filters?: QuotationFilters, extraHeaders?: HeadersInit): Promise<QuotationResponse> {
+export async function fetchQuotations(
+  filters?: QuotationFilters,
+  extraHeaders?: HeadersInit
+): Promise<QuotationResponse> {
   const params = new URLSearchParams();
   if (filters?.search) params.append('search', filters.search);
   if (filters?.cropId) params.append('cropId', filters.cropId.toString());
@@ -21,9 +29,9 @@ export async function fetchQuotations(filters?: QuotationFilters, extraHeaders?:
   const url = `http://localhost:4000/quotations${params.toString() ? `?${params.toString()}` : ''}`;
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...extraHeaders
+    ...extraHeaders,
   };
-  
+
   const response = await fetch(url, {
     method: 'GET',
     headers,
@@ -34,10 +42,13 @@ export async function fetchQuotations(filters?: QuotationFilters, extraHeaders?:
   return response.json();
 }
 
-export async function createQuotation(input: CreateQuotationInput, extraHeaders?: HeadersInit): Promise<CreateQuotationResponse> {
+export async function createQuotation(
+  input: CreateQuotationInput,
+  extraHeaders?: HeadersInit
+): Promise<CreateQuotationResponse> {
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
-    ...extraHeaders
+    ...extraHeaders,
   };
 
   const response = await fetch('http://localhost:4000/quotations', {

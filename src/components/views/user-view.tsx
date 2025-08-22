@@ -14,27 +14,21 @@ interface UserViewProps {
 export default function UserView({ user }: UserViewProps) {
   return (
     <div className="min-h-screen bg-gray-50">
-        
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900">Cotizador de Seguros Agrícolas</h1>
+        </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Cotizador de Seguros Agrícolas</h1>
-          </div>
+        {/* Main Content */}
+        <div className="space-y-8">
+          {/* Formulario de Nueva Cotización con mapa a la derecha */}
+          <QuotationForm />
 
-          {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Formulario de Nueva Cotización */}
-            <div>
-              <QuotationForm onSuccess={() => {}} />
-            </div>
-
-            {/* Lista de Mis Cotizaciones */}
-            <div>
-              <VendorQuotations />
-            </div>
-          </div>
+          {/* Lista de Mis Cotizaciones (siempre abajo) */}
+          <VendorQuotations />
         </div>
       </div>
+    </div>
   );
 }

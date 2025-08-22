@@ -69,7 +69,7 @@ export default function Home() {
     return (
       <>
         <Navbar />
-        <AdminView  />
+        <AdminView />
       </>
     );
   } else if (session.user.role === 'USER') {

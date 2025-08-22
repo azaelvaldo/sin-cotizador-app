@@ -22,7 +22,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
     if (session) {
       // Store the session in localStorage
       localStorage.setItem('session', JSON.stringify(session));
-      
+
       // Redirect to main page
       window.location.href = '/';
     }
@@ -34,23 +34,21 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
         <CardHeader className="text-center space-y-4">
           {/* Sinecta Logo */}
           <div className="mx-auto w-32 h-16 flex items-center justify-center">
-            <img 
+            <img
               src="https://sinecta.com/wp-content/uploads/2024/03/Sinecta_Logotipo-2-03-p-500-2.png"
               alt="Sinecta Logo"
               className="w-full h-auto object-contain"
             />
           </div>
-          
+
           <div className="space-y-2">
-            <CardTitle className="text-2xl font-bold text-gray-800">
-              Cotizaciones
-            </CardTitle>
+            <CardTitle className="text-2xl font-bold text-gray-800">Cotizaciones</CardTitle>
             <p className="text-sm text-gray-600">
               Ingrese sus credenciales para acceder al sistema
             </p>
           </div>
         </CardHeader>
-        
+
         <CardContent>
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
@@ -59,7 +57,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   {error}
                 </div>
               )}
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
                   Email
@@ -74,7 +72,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   className="w-full"
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password" className="text-sm font-medium text-gray-700">
                   Contraseña
@@ -89,23 +87,25 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                   className="w-full"
                 />
               </div>
-              
-              <Button 
-                type="submit" 
-                className="w-full bg-gray-800 hover:bg-gray-900 text-white" 
+
+              <Button
+                type="submit"
+                className="w-full bg-gray-800 hover:bg-gray-900 text-white"
                 disabled={isLoading}
               >
                 {isLoading ? 'Iniciando Sesión...' : 'Iniciar Sesión'}
               </Button>
             </div>
-            
+
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">
-                Credenciales de prueba:
-              </h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Credenciales de prueba:</h4>
               <div className="text-xs text-gray-600 space-y-1">
-                <p><strong>Admin:</strong> admin@example.com / Admin1234!</p>
-                <p><strong>Usuario:</strong> user@example.com / User1234!</p>
+                <p>
+                  <strong>Admin:</strong> admin@example.com / Admin1234!
+                </p>
+                <p>
+                  <strong>Usuario:</strong> user@example.com / User1234!
+                </p>
               </div>
             </div>
           </form>

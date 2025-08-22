@@ -8,12 +8,7 @@ import { getAuthToken } from '@/lib/utils';
 export default function useQuotations(filters?: QuotationFilters) {
   const queryClient = useQueryClient();
 
-  const {
-    data,
-    isLoading,
-    error,
-    refetch
-  } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: [
       'quotations',
       filters?.search,
@@ -27,22 +22,24 @@ export default function useQuotations(filters?: QuotationFilters) {
       filters?.page,
       filters?.pageSize,
       filters?.sortKey,
-      filters?.sortDirection
+      filters?.sortDirection,
     ],
-    queryFn: () => fetchQuotations(filters, {
-      'Authorization': `Bearer ${getAuthToken()}`
-    }),
+    queryFn: () =>
+      fetchQuotations(filters, {
+        Authorization: `Bearer ${getAuthToken()}`,
+      }),
     staleTime: 30_000,
   });
 
   const { mutate: createItem, isPending: createLoading } = useMutation({
     mutationKey: ['create-quotation'],
-    mutationFn: (input: CreateQuotationInput) => createQuotation(input, {
-      'Authorization': `Bearer ${getAuthToken()}`
-    }),
+    mutationFn: (input: CreateQuotationInput) =>
+      createQuotation(input, {
+        Authorization: `Bearer ${getAuthToken()}`,
+      }),
     onSuccess() {
       queryClient.invalidateQueries({ queryKey: ['quotations'] });
-    }
+    },
   });
 
   return {
@@ -55,6 +52,6 @@ export default function useQuotations(filters?: QuotationFilters) {
     error,
     refetch,
     createQuotation: createItem,
-    createLoading
+    createLoading,
   };
 }

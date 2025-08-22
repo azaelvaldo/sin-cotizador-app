@@ -1,10 +1,10 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { FileText, TrendingUp, Clock, DollarSign, Users, AlertTriangle } from "lucide-react"
-import useQuotations from "@/hooks/use-quotation"
-import type { Quotation } from "@/types/quotation.types"
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, TrendingUp, Clock, DollarSign, Users, AlertTriangle } from 'lucide-react';
+import useQuotations from '@/hooks/use-quotation';
+import type { Quotation } from '@/types/quotation.types';
 
 export default function AdminStats() {
   const [stats, setStats] = useState({
@@ -15,35 +15,35 @@ export default function AdminStats() {
     enRevision: 0,
     montoTotal: 0,
     superficieTotal: 0,
-  })
-  const [loading, setLoading] = useState(true)
-  const { quotations, isLoading } = useQuotations({ page: 0, pageSize: 100 })
+  });
+  const [loading, setLoading] = useState(true);
+  const { quotations, isLoading } = useQuotations({ page: 0, pageSize: 100 });
 
   useEffect(() => {
     if (!isLoading) {
-      const list: Quotation[] = quotations || []
+      const list: Quotation[] = quotations || [];
       const newStats = {
         total: list.length,
-        pendientes: list.filter((q) => q.status === "pending").length,
-        aprobadas: list.filter((q) => q.status === "approved").length,
-        rechazadas: list.filter((q) => q.status === "rejected").length,
-        enRevision: list.filter((q) => q.status === "review").length,
+        pendientes: list.filter((q) => q.status === 'pending').length,
+        aprobadas: list.filter((q) => q.status === 'approved').length,
+        rechazadas: list.filter((q) => q.status === 'rejected').length,
+        enRevision: list.filter((q) => q.status === 'review').length,
         montoTotal: list.reduce((sum, q) => sum + (q.insuredAmount || 0), 0),
         superficieTotal: list.reduce((sum, q) => sum + (q.insuredArea || 0), 0),
-      }
-      setStats(newStats)
-      setLoading(false)
+      };
+      setStats(newStats);
+      setLoading(false);
     }
-  }, [isLoading])
+  }, [isLoading]);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-AR", {
-      style: "currency",
-      currency: "ARS",
+    return new Intl.NumberFormat('es-AR', {
+      style: 'currency',
+      currency: 'ARS',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
-    }).format(amount)
-  }
+    }).format(amount);
+  };
 
   if (loading) {
     return (
@@ -59,7 +59,7 @@ export default function AdminStats() {
           </Card>
         ))}
       </div>
-    )
+    );
   }
 
   return (
@@ -141,5 +141,5 @@ export default function AdminStats() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

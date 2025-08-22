@@ -60,10 +60,10 @@ export type Quotation = BaseQuotation & {
 };
 
 export type Alert = {
-  id: string
-  title: string
-  message: string
-  type: "info" | "warning" | "error" | "success"
-  read: boolean
-  createdAt: Date
-}
+  id: string;
+  title: string;
+  message: string;
+  type: 'info' | 'warning' | 'error' | 'success';
+  read: boolean;
+  createdAt: Date;
+};

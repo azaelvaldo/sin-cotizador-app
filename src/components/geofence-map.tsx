@@ -1,4 +1,4 @@
-"use client"
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -8,8 +8,19 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import * as turf from '@turf/turf';
 
 interface GeofenceMapProps {
-  onGeofenceChange?: (geofence: { type: string; properties: Record<string, unknown>; geometry: Record<string, unknown> }, area: number) => void;
-  initialGeofence?: { type: string; properties: Record<string, unknown>; geometry: Record<string, unknown> };
+  onGeofenceChange?: (
+    geofence: {
+      type: string;
+      properties: Record<string, unknown>;
+      geometry: Record<string, unknown>;
+    },
+    area: number
+  ) => void;
+  initialGeofence?: {
+    type: string;
+    properties: Record<string, unknown>;
+    geometry: Record<string, unknown>;
+  };
 }
 
 const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeofence }) => {
@@ -26,11 +37,14 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         drawnLayersRef.current.removeLayer(layer);
       });
       drawnLayersRef.current.clearLayers();
-      
+
       setArea(0);
       setHasPolygon(false);
       if (onGeofenceChange) {
-        onGeofenceChange({ type: "Feature", properties: {}, geometry: { type: "Polygon", coordinates: [] } }, 0);
+        onGeofenceChange(
+          { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [] } },
+          0
+        );
       }
     };
 
@@ -40,10 +54,15 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
     useEffect(() => {
       const drawnLayers = drawnLayersRef.current;
       map.addLayer(drawnLayers);
-      console.log('Feature group added to map:', map.hasLayer(drawnLayers));
 
       // Add initial geofence if provided
-      if (initialGeofence && initialGeofence.geometry && 'coordinates' in initialGeofence.geometry && Array.isArray(initialGeofence.geometry.coordinates) && initialGeofence.geometry.coordinates.length > 0) {
+      if (
+        initialGeofence &&
+        initialGeofence.geometry &&
+        'coordinates' in initialGeofence.geometry &&
+        Array.isArray(initialGeofence.geometry.coordinates) &&
+        initialGeofence.geometry.coordinates.length > 0
+      ) {
         try {
           // Add only the inner layers from GeoJSON into the feature group, so they are editable
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -62,13 +81,11 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
           console.error('Error loading initial geofence:', error);
         }
       }
-      
-      const DrawControl = (L.Control as unknown as { Draw: new (options: Record<string, unknown>) => L.Control }).Draw;
+
+      const DrawControl = (
+        L.Control as unknown as { Draw: new (options: Record<string, unknown>) => L.Control }
+      ).Draw;
       const drawControl = new DrawControl({
-        edit: {
-          featureGroup: drawnLayers,
-          remove: true,
-        },
         draw: {
           polygon: {
             allowIntersection: false,
@@ -84,7 +101,12 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
       map.addControl(drawControl);
 
       // When a polygon is created, add it to the feature group, style it, and bring to front
-      const onDrawCreated = (e: { layer: L.Layer & { toGeoJSON: () => Record<string, unknown>; setStyle?: (style: L.PathOptions) => void } }) => {
+      const onDrawCreated = (e: {
+        layer: L.Layer & {
+          toGeoJSON: () => Record<string, unknown>;
+          setStyle?: (style: L.PathOptions) => void;
+        };
+      }) => {
         const createdLayer = e.layer;
 
         // Keep only the latest polygon
@@ -110,9 +132,12 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         }
 
         setHasPolygon(true);
-        console.log('Feature group layers count after adding:', drawnLayers.getLayers().length);
 
-        const featureForArea = createdLayer.toGeoJSON() as unknown as { type: string; properties: Record<string, unknown>; geometry: Record<string, unknown> };
+        const featureForArea = createdLayer.toGeoJSON() as unknown as {
+          type: string;
+          properties: Record<string, unknown>;
+          geometry: Record<string, unknown>;
+        };
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const areaInSquareMeters = turf.area(featureForArea as any);
@@ -130,7 +155,14 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         setArea(0);
         setHasPolygon(false);
         if (onGeofenceChange) {
-          onGeofenceChange({ type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [] } as unknown as Record<string, unknown> }, 0);
+          onGeofenceChange(
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: { type: 'Polygon', coordinates: [] } as unknown as Record<string, unknown>,
+            },
+            0
+          );
         }
       };
 
@@ -138,7 +170,11 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         const layers = drawnLayers.getLayers();
         if (layers.length > 0) {
           const firstLayer = layers[0] as L.Layer & { toGeoJSON: () => Record<string, unknown> };
-          const editedFeature = firstLayer.toGeoJSON() as { type: string; properties: Record<string, unknown>; geometry: Record<string, unknown> };
+          const editedFeature = firstLayer.toGeoJSON() as {
+            type: string;
+            properties: Record<string, unknown>;
+            geometry: Record<string, unknown>;
+          };
           try {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const areaInSquareMeters = turf.area(editedFeature as any);
@@ -179,9 +215,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
   return (
     <div>
       <div className="mb-2 flex justify-between items-center">
-        <span className="text-sm text-gray-600">
-          Dibuja un polígono para definir el área
-        </span>
+        <span className="text-sm text-gray-600">Dibuja un polígono para definir el área</span>
         {hasPolygon && (
           <button
             onClick={handleClearMap}
@@ -191,16 +225,16 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
           </button>
         )}
       </div>
-      
-      <MapContainer 
-        center={[28.954250461617914, -111.24862117479974]} 
-        zoom={13} 
+
+      <MapContainer
+        center={[28.954250461617914, -111.24862117479974]}
+        zoom={13}
         style={{ width: '100%', height: '500px' }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <MapController />
       </MapContainer>
-      
+
       {area > 0 && (
         <div className="mt-2 text-sm text-gray-600">
           Área: <span className="font-semibold">{area.toFixed(2)} hectáreas</span>

@@ -1,140 +1,166 @@
-"use client"
+'use client';
 
-import { useEffect, useMemo, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Eye, Download, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import useQuotations from "@/hooks/use-quotation"
-import useCrops from "@/hooks/use-crop"
-import useStates from "@/hooks/use-state"
-import type { QuotationFilters } from "@/types/quotation.types"
+import { useEffect, useMemo, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Eye, Download, Search, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import useQuotations from '@/hooks/use-quotation';
+import useCrops from '@/hooks/use-crop';
+import useStates from '@/hooks/use-state';
+import type { QuotationFilters } from '@/types/quotation.types';
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 10;
 
 const getStatusBadge = (status: string) => {
   const variants = {
-    pending: "bg-yellow-100 text-yellow-800",
-    approved: "bg-green-100 text-green-800",
-    rejected: "bg-red-100 text-red-800",
-    review: "bg-blue-100 text-blue-800",
-    expired: "bg-gray-100 text-gray-800",
-  }
+    pending: 'bg-yellow-100 text-yellow-800',
+    approved: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800',
+    review: 'bg-blue-100 text-blue-800',
+    expired: 'bg-gray-100 text-gray-800',
+  };
 
   const labels = {
-    pending: "Pendiente",
-    approved: "Aprobada",
-    rejected: "Rechazada",
-    review: "En Revisión",
-    expired: "Vencida",
-  }
+    pending: 'Pendiente',
+    approved: 'Aprobada',
+    rejected: 'Rechazada',
+    review: 'En Revisión',
+    expired: 'Vencida',
+  };
 
   return (
-    <Badge className={variants[status as keyof typeof variants] || "bg-gray-100 text-gray-800"}>
+    <Badge className={variants[status as keyof typeof variants] || 'bg-gray-100 text-gray-800'}>
       {labels[status as keyof typeof labels] || status}
     </Badge>
-  )
-}
+  );
+};
 
 export default function QuotationsTable() {
-  const [currentPage, setCurrentPage] = useState(0)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState<"all" | QuotationFilters["status"]>("all")
-  const [filterCropId, setFilterCropId] = useState<"all" | number>("all")
-  const [filterStateId, setFilterStateId] = useState<"all" | number>("all")
+  const [currentPage, setCurrentPage] = useState(0);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | QuotationFilters['status']>('all');
+  const [filterCropId, setFilterCropId] = useState<'all' | number>('all');
+  const [filterStateId, setFilterStateId] = useState<'all' | number>('all');
 
-  const { data: cropsData } = useCrops({ page: 0, pageSize: 100 })
-  const { data: statesData } = useStates({ page: 0, pageSize: 100 })
+  const [cropSearch, setCropSearch] = useState('');
+  const [stateSearch, setStateSearch] = useState('');
+  const { data: cropsData } = useCrops({ page: 0, pageSize: 5, search: cropSearch || undefined });
+  const { data: statesData } = useStates({
+    page: 0,
+    pageSize: 5,
+    search: stateSearch || undefined,
+  });
 
-  const filters = useMemo<QuotationFilters>(() => ({
-    search: searchTerm || undefined,
-    cropId: filterCropId !== "all" ? Number(filterCropId) : undefined,
-    stateId: filterStateId !== "all" ? Number(filterStateId) : undefined,
-    status: filterStatus !== "all" ? filterStatus : undefined,
-    page: currentPage,
-    pageSize: ITEMS_PER_PAGE,
-  }), [searchTerm, filterCropId, filterStateId, filterStatus, currentPage])
+  const filters = useMemo<QuotationFilters>(
+    () => ({
+      search: searchTerm || undefined,
+      cropId: filterCropId !== 'all' ? Number(filterCropId) : undefined,
+      stateId: filterStateId !== 'all' ? Number(filterStateId) : undefined,
+      status: filterStatus !== 'all' ? filterStatus : undefined,
+      page: currentPage,
+      pageSize: ITEMS_PER_PAGE,
+    }),
+    [searchTerm, filterCropId, filterStateId, filterStatus, currentPage]
+  );
 
-  const { quotations, isLoading, total, totalPages, page, pageSize } = useQuotations(filters)
+  const { quotations, isLoading, total, totalPages, page, pageSize } = useQuotations(filters);
 
   useEffect(() => {
-    setCurrentPage(0)
-  }, [searchTerm, filterCropId, filterStateId, filterStatus])
+    setCurrentPage(0);
+  }, [searchTerm, filterCropId, filterStateId, filterStatus]);
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("es-MX", {
-      style: "currency",
-      currency: "MXN",
-    }).format(amount)
-  }
+    return new Intl.NumberFormat('es-MX', {
+      style: 'currency',
+      currency: 'MXN',
+    }).format(amount);
+  };
 
   const formatDate = (dateInput: string | Date) => {
-    const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput
-    return new Intl.DateTimeFormat("es-MX").format(date)
-  }
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+    return new Intl.DateTimeFormat('es-MX').format(date);
+  };
 
   const exportToCSV = () => {
     const headers = [
-      "Cliente",
-      "Cultivo",
-      "Status",
-      "Estado",
-      "Superficie (ha)",
-      "Monto Asegurado",
-      "Vigencia Inicio",
-      "Vigencia Fin",
-      "Fecha Creación",
-    ]
+      'Cliente',
+      'Cultivo',
+      'Status',
+      'Estado',
+      'Superficie (ha)',
+      'Monto Asegurado',
+      'Vigencia Inicio',
+      'Vigencia Fin',
+      'Fecha Creación',
+    ];
 
     const csvContent = [
-      headers.join(","),
+      headers.join(','),
       ...quotations.map((q) =>
         [
           `"${q.clientName}"`,
-          q.crop && typeof q.crop === 'object' && 'name' in q.crop ? (q.crop as { name?: string }).name || "" : "",
+          q.crop && typeof q.crop === 'object' && 'name' in q.crop
+            ? (q.crop as { name?: string }).name || ''
+            : '',
           q.status,
-          q.state && typeof q.state === 'object' && 'name' in q.state ? (q.state as { name?: string }).name || "" : "",
+          q.state && typeof q.state === 'object' && 'name' in q.state
+            ? (q.state as { name?: string }).name || ''
+            : '',
           q.insuredArea,
           q.insuredAmount,
-          q.validityStart ? formatDate(q.validityStart) : "",
-          q.validityEnd ? formatDate(q.validityEnd) : "",
-          q.createdAt ? formatDate(q.createdAt) : "",
-        ].join(","),
+          q.validityStart ? formatDate(q.validityStart) : '',
+          q.validityEnd ? formatDate(q.validityEnd) : '',
+          q.createdAt ? formatDate(q.createdAt) : '',
+        ].join(',')
       ),
-    ].join("\n")
+    ].join('\n');
 
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
-    const link = document.createElement("a")
-    const url = URL.createObjectURL(blob)
-    link.setAttribute("href", url)
-    link.setAttribute("download", `cotizaciones_${new Date().toISOString().split("T")[0]}.csv`)
-    link.style.visibility = "hidden"
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `cotizaciones_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const exportToPDF = () => {
     // Simulación de exportación a PDF
-    alert("Funcionalidad de exportación a PDF en desarrollo")
-  }
+    alert('Funcionalidad de exportación a PDF en desarrollo');
+  };
 
   const resetFilters = () => {
-    setSearchTerm("")
-    setFilterStatus("all")
-    setFilterCropId("all")
-    setFilterStateId("all")
-    setCurrentPage(1)
-  }
+    setSearchTerm('');
+    setFilterStatus('all');
+    setFilterCropId('all');
+    setFilterStateId('all');
+    setCurrentPage(1);
+  };
 
   const handleViewDetail = (quotationId: string) => {
     // TODO: navigate to detail view when available
-    console.log("view quotation", quotationId)
-  }
+    console.log('view quotation', quotationId);
+  };
 
   if (isLoading) {
     return (
@@ -148,7 +174,7 @@ export default function QuotationsTable() {
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -191,7 +217,10 @@ export default function QuotationsTable() {
 
             <div className="space-y-2">
               <Label>Status de Cotización</Label>
-              <Select value={filterStatus} onValueChange={(v) => setFilterStatus(v as typeof filterStatus)}>
+              <Select
+                value={filterStatus}
+                onValueChange={(v) => setFilterStatus(v as typeof filterStatus)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -207,14 +236,26 @@ export default function QuotationsTable() {
 
             <div className="space-y-2">
               <Label>Cultivo</Label>
-              <Select value={String(filterCropId)} onValueChange={(v) => setFilterCropId(v === 'all' ? 'all' : Number(v))}>
+              <Select
+                value={String(filterCropId)}
+                onValueChange={(v) => setFilterCropId(v === 'all' ? 'all' : Number(v))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los cultivos</SelectItem>
+                  <div className="p-2">
+                    <Input
+                      placeholder="Buscar cultivo..."
+                      value={cropSearch}
+                      onChange={(e) => setCropSearch(e.target.value)}
+                    />
+                  </div>
                   {(cropsData?.data || []).map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
+                    <SelectItem key={c.id} value={String(c.id)}>
+                      {c.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -222,14 +263,26 @@ export default function QuotationsTable() {
 
             <div className="space-y-2">
               <Label>Estado (México)</Label>
-              <Select value={String(filterStateId)} onValueChange={(v) => setFilterStateId(v === 'all' ? 'all' : Number(v))}>
+              <Select
+                value={String(filterStateId)}
+                onValueChange={(v) => setFilterStateId(v === 'all' ? 'all' : Number(v))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos los estados</SelectItem>
+                  <div className="p-2">
+                    <Input
+                      placeholder="Buscar estado..."
+                      value={stateSearch}
+                      onChange={(e) => setStateSearch(e.target.value)}
+                    />
+                  </div>
                   {(statesData?.data || []).map((s) => (
-                    <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
+                    <SelectItem key={s.id} value={String(s.id)}>
+                      {s.name}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -271,17 +324,38 @@ export default function QuotationsTable() {
                   quotations.map((quotation) => (
                     <TableRow key={quotation.id}>
                       <TableCell className="font-medium">{quotation.clientName}</TableCell>
-                      <TableCell>{quotation.crop && typeof quotation.crop === 'object' && 'name' in quotation.crop ? (quotation.crop as { name?: string }).name || '-' : '-'}</TableCell>
-                      <TableCell>{getStatusBadge(quotation.status)}</TableCell>
-                      <TableCell className="text-sm">{quotation.state && typeof quotation.state === 'object' && 'name' in quotation.state ? (quotation.state as { name?: string }).name || '-' : '-'}</TableCell>
-                      <TableCell className="text-right">{quotation.insuredArea} ha</TableCell>
-                      <TableCell className="text-right">{formatCurrency(quotation.insuredAmount)}</TableCell>
-                      <TableCell className="text-sm">
-                        {quotation.validityStart ? formatDate(quotation.validityStart) : "N/A"} - {quotation.validityEnd ? formatDate(quotation.validityEnd) : "N/A"}
+                      <TableCell>
+                        {quotation.crop &&
+                        typeof quotation.crop === 'object' &&
+                        'name' in quotation.crop
+                          ? (quotation.crop as { name?: string }).name || '-'
+                          : '-'}
                       </TableCell>
-                      <TableCell className="text-sm">{quotation.createdAt ? formatDate(quotation.createdAt) : "N/A"}</TableCell>
+                      <TableCell>{getStatusBadge(quotation.status)}</TableCell>
+                      <TableCell className="text-sm">
+                        {quotation.state &&
+                        typeof quotation.state === 'object' &&
+                        'name' in quotation.state
+                          ? (quotation.state as { name?: string }).name || '-'
+                          : '-'}
+                      </TableCell>
+                      <TableCell className="text-right">{quotation.insuredArea} ha</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" onClick={() => handleViewDetail(quotation.id)}>
+                        {formatCurrency(quotation.insuredAmount)}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {quotation.validityStart ? formatDate(quotation.validityStart) : 'N/A'} -{' '}
+                        {quotation.validityEnd ? formatDate(quotation.validityEnd) : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {quotation.createdAt ? formatDate(quotation.createdAt) : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleViewDetail(quotation.id)}
+                        >
                           <Eye className="h-4 w-4" />
                         </Button>
                       </TableCell>
@@ -296,7 +370,8 @@ export default function QuotationsTable() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <p className="text-sm text-muted-foreground">
-                Mostrando {(page - 1) * pageSize + 1} a {Math.min(page * pageSize, total)} de {total} resultados
+                Mostrando {(page - 1) * pageSize + 1} a {Math.min(page * pageSize, total)} de{' '}
+                {total} resultados
               </p>
               <div className="flex items-center space-x-2">
                 <Button
@@ -328,5 +403,5 @@ export default function QuotationsTable() {
 
       {/* Detail modal removed until implemented */}
     </>
-  )
+  );
 }
