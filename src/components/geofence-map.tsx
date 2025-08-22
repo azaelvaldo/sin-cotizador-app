@@ -27,6 +27,8 @@ interface GeofenceMapProps {
 const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeofence, readOnly }) => {
   const [area, setArea] = useState<number>(0);
   const [hasPolygon, setHasPolygon] = useState(false);
+  const [alternativePolygon, setAlternativePolygon] = useState<L.Polygon | null>(null);
+  const clearMapRef = useRef<(() => void) | null>(null);
 
   const MapController = () => {
     const map = useMap();
@@ -38,6 +40,12 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         drawnLayersRef.current.removeLayer(layer);
       });
       drawnLayersRef.current.clearLayers();
+
+      // Clear the alternative polygon if it exists
+      if (alternativePolygon) {
+        map.removeLayer(alternativePolygon);
+        setAlternativePolygon(null);
+      }
 
       setArea(0);
       setHasPolygon(false);
@@ -51,9 +59,19 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
 
     // Expose clearMap function globally for the button
     (window as unknown as { clearGeofenceMap?: () => void }).clearGeofenceMap = clearMap;
+    
+    // Also expose it through the ref for the component
+    clearMapRef.current = clearMap;
 
     useEffect(() => {
       const drawnLayers = drawnLayersRef.current;
+      
+      // Ensure the feature group is properly configured
+      drawnLayers.options = {
+        ...drawnLayers.options,
+        pane: 'overlayPane' // Ensure it's in the correct pane
+      };
+      
       map.addLayer(drawnLayers);
 
       // Add initial geofence if provided
@@ -91,6 +109,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
             polygon: {
               allowIntersection: false,
               showArea: true,
+              
             },
             polyline: false,
             rectangle: false,
@@ -98,6 +117,7 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
             circlemarker: false,
             marker: false,
           },
+          
         });
         drawControl = dc as unknown as L.Control;
         map.addControl(drawControl);
@@ -108,31 +128,56 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         layer: L.Layer & {
           toGeoJSON: () => Record<string, unknown>;
           setStyle?: (style: L.PathOptions) => void;
+          _latlngs?: unknown;
+          _bounds?: unknown;
         };
       }) => {
         const createdLayer = e.layer;
 
-        // Keep only the latest polygon
+        // Clear existing layers first
         drawnLayers.clearLayers();
 
         // Style the drawn layer if possible
         if ('setStyle' in createdLayer && typeof createdLayer.setStyle === 'function') {
-          (createdLayer as unknown as L.Path).setStyle({
-            color: '#ff0000',
-            weight: 6,
-            opacity: 1,
-            fillColor: '#ffff00',
-            fillOpacity: 0.6,
-          });
+          // Use default Leaflet styling - no custom colors needed
         }
 
-        // Add to feature group only (no direct addTo(map))
+        // Add to feature group first
         drawnLayers.addLayer(createdLayer);
-
-        // Bring to front if supported
+        
+        // Ensure the layer is visible by adding it directly to the map as well
+        if (createdLayer.addTo && typeof createdLayer.addTo === 'function') {
+          try {
+            createdLayer.addTo(map);
+          } catch (error) {
+            console.error('Error adding layer to map:', error);
+          }
+        }
+        
+        // Force the layer to be visible and bring to front
         if ((createdLayer as unknown as L.Path).bringToFront) {
           (createdLayer as unknown as L.Path).bringToFront();
         }
+        
+        // Alternative: Create a new polygon from the coordinates to ensure visibility
+        try {
+          const coords = (createdLayer as unknown as { _latlngs: Array<Array<{ lat: number; lng: number }>> })._latlngs[0];
+          if (coords && Array.isArray(coords) && coords.length >= 3) {
+            // Remove any existing alternative polygon first
+            if (alternativePolygon) {
+              map.removeLayer(alternativePolygon);
+            }
+            
+            const newPolygon = L.polygon(coords);
+            newPolygon.addTo(map);
+            setAlternativePolygon(newPolygon);
+          }
+        } catch (error) {
+          console.error('Error creating alternative polygon:', error);
+        }
+        
+        // Force a redraw of the map to ensure the layer is visible
+        map.invalidateSize();
 
         setHasPolygon(true);
 
@@ -155,6 +200,12 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
       };
 
       const onDrawDeleted = () => {
+        // Clear the alternative polygon if it exists
+        if (alternativePolygon) {
+          map.removeLayer(alternativePolygon);
+          setAlternativePolygon(null);
+        }
+        
         setArea(0);
         setHasPolygon(false);
         if (onGeofenceChange) {
@@ -215,14 +266,21 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
   };
 
   const handleClearMap = () => {
-    const windowWithClear = window as unknown as { clearGeofenceMap?: () => void };
-    if (windowWithClear.clearGeofenceMap) {
-      windowWithClear.clearGeofenceMap();
+    if (clearMapRef.current) {
+      clearMapRef.current();
     }
   };
 
   return (
     <div>
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .leaflet-overlay-pane svg {
+            z-index: 1000 !important;
+          }
+        `
+      }} />
+      
       <div className="mb-2 flex justify-between items-center">
         {!readOnly && hasPolygon && (
           <button
@@ -242,12 +300,6 @@ const GeofenceMap: React.FC<GeofenceMapProps> = ({ onGeofenceChange, initialGeof
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
         <MapController />
       </MapContainer>
-
-      {area > 0 && (
-        <div className="mt-2 text-sm text-gray-600">
-          Área: <span className="font-semibold">{area.toFixed(2)} hectáreas</span>
-        </div>
-      )}
     </div>
   );
 };

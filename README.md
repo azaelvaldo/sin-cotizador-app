@@ -126,7 +126,7 @@ npm start
 - Listado con filtros avanzados, paginación 0‑based y exportación CSV.
 - Geocerca editable (en formulario) y sólo lectura (en detalle), con cálculo de hectáreas.
 - Centro de alertas con soporte a eventos en tiempo real (`HIGH_AREA_ALERT`).
-- Contexto de sesión y proveedor de React Query listos para escalar.
+- Contexto de sesión y proveedor de React Query.
 
 ---
 
