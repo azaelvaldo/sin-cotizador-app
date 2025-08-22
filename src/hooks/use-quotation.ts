@@ -48,7 +48,7 @@ export default function useQuotations(filters?: QuotationFilters) {
   return {
     quotations: data?.data || [],
     total: data?.total || 0,
-    page: data?.page || 1,
+    page: data?.page || 0,
     pageSize: data?.pageSize || 10,
     totalPages: data?.totalPages || 0,
     isLoading,

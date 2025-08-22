@@ -43,7 +43,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
           
           <div className="space-y-2">
             <CardTitle className="text-2xl font-bold text-gray-800">
-              Sinecta Cotizaciones
+              Cotizaciones
             </CardTitle>
             <p className="text-sm text-gray-600">
               Ingrese sus credenciales para acceder al sistema

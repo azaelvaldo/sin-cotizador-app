@@ -2,8 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/auth-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import AdminView from '@/components/views/admin-view';
+import UserView from '@/components/views/user-view';
+import Navbar from '@/components/navbar';
 
 interface User {
   id: string;
@@ -19,6 +23,7 @@ interface Session {
 }
 
 export default function Home() {
+  const { user, isLoading: authLoading } = useAuth();
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
@@ -47,7 +52,7 @@ export default function Home() {
     router.push('/login');
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="text-lg">Loading...</div>
@@ -55,71 +60,59 @@ export default function Home() {
     );
   }
 
-  if (!session) {
+  if (!session || !user) {
     return null;
   }
 
+  // Render role-specific component with navbar
+  if (session.user.role === 'ADMIN') {
+    return (
+      <>
+        <Navbar />
+        <AdminView  />
+      </>
+    );
+  } else if (session.user.role === 'USER') {
+    return (
+      <>
+        <Navbar />
+        <UserView user={session.user} />
+      </>
+    );
+  }
+
+  // Fallback for unknown roles
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Welcome to Sinecta</h1>
-          <Button onClick={handleLogout} variant="outline">
-            Logout
-          </Button>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>User Information</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div>
-                <span className="font-semibold">Email:</span> {session.user.email}
-              </div>
-              <div>
-                <span className="font-semibold">Role:</span> {session.user.role}
-              </div>
-              <div>
-                <span className="font-semibold">User ID:</span> {session.user.id}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-gray-50 p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Welcome to Sinecta</h1>
+            <Button onClick={handleLogout} variant="outline">
+              Logout
+            </Button>
+          </div>
           <Card>
             <CardHeader>
-              <CardTitle>Dashboard</CardTitle>
+              <CardTitle>User Information</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
-                This is your main dashboard. Add your application content here.
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Button className="w-full" variant="outline">
-                  View Reports
-                </Button>
-                <Button className="w-full" variant="outline">
-                  Manage Users
-                </Button>
-                <Button className="w-full" variant="outline">
-                  Settings
-                </Button>
+              <div className="space-y-4">
+                <div>
+                  <span className="font-semibold">Email:</span> {session.user.email}
+                </div>
+                <div>
+                  <span className="font-semibold">Role:</span> {session.user.role}
+                </div>
+                <div>
+                  <span className="font-semibold">User ID:</span> {session.user.id}
+                </div>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
+    </>
   );
 }

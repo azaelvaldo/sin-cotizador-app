@@ -1,4 +1,6 @@
-export type QuotationFilters = {
+import { PaginationParams } from "./common.types";
+
+export type QuotationFilters = PaginationParams & {
   search?: string;
   cropId?: number;
   stateId?: number;
@@ -9,16 +11,26 @@ export type QuotationFilters = {
   };
   insuredAmount?: number;
   status?: 'pending' | 'approved' | 'rejected' | 'review';
-  page?: number;
-  pageSize?: number;
-  sortKey?: string;
-  sortDirection?: 'asc' | 'desc';
 };
 
 export type Quotation = {
   id: string;
-  // Add your actual quotation properties here
-  [key: string]: unknown;
+  clientName: string;
+  cropId: number;
+  stateId: number;
+  insuredArea: number;
+  insuredAmount: number;
+  validityStart: Date;
+  validityEnd: Date;
+  status: string;
+  geofence?: Record<string, unknown>;
+  createdAt: Date;
+  updatedAt: Date;
+  createdBy: string;
+  // Relations will be properly typed in index.ts
+  createdByUser?: unknown;
+  crop?: unknown;
+  state?: unknown;
 };
 
 export type QuotationResponse = {
@@ -33,14 +45,15 @@ export type CreateQuotationInput = {
   clientName: string;
   cropId: number;
   stateId: number;
+  insuredArea: number;
   insuredAmount: number;
   validityStart: string;
   validityEnd: string;
-  geofence: Record<string, unknown>; // Replace with your actual geofence type
+  geofence?: Record<string, unknown>;
 };
 
 export type CreateQuotationResponse = {
-  id: string;
-  message: string;
-  // Add other response properties as needed
+  id: number;
+  message?: string;
+  success: boolean;
 };

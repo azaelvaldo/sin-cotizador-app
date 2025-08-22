@@ -6,6 +6,7 @@ export async function fetchQuotations(filters?: QuotationFilters, extraHeaders?:
   if (filters?.cropId) params.append('cropId', filters.cropId.toString());
   if (filters?.stateId) params.append('stateId', filters.stateId.toString());
   if (filters?.createdBy) params.append('createdBy', filters.createdBy);
+  if (filters?.status) params.append('status', filters.status);
   if (filters?.insuredAmount) params.append('insuredAmount', filters.insuredAmount.toString());
   if (filters?.page) params.append('page', filters.page.toString());
   if (filters?.pageSize) params.append('pageSize', filters.pageSize.toString());
@@ -17,7 +18,7 @@ export async function fetchQuotations(filters?: QuotationFilters, extraHeaders?:
   if (filters?.dateRange?.end) {
     params.append('endDate', filters.dateRange.end.toISOString());
   }
-  const url = `http://localhost:4000/quotation${params.toString() ? `?${params.toString()}` : ''}`;
+  const url = `http://localhost:4000/quotations${params.toString() ? `?${params.toString()}` : ''}`;
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
     ...extraHeaders
@@ -39,7 +40,7 @@ export async function createQuotation(input: CreateQuotationInput, extraHeaders?
     ...extraHeaders
   };
 
-  const response = await fetch('http://localhost:4000/quotation', {
+  const response = await fetch('http://localhost:4000/quotations', {
     method: 'POST',
     headers,
     body: JSON.stringify(input),
